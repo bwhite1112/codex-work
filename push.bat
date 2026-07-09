@@ -17,13 +17,12 @@ if errorlevel 1 (
 )
 
 echo.
-set /p COMMIT_MSG=Enter commit message: 
+set /p COMMIT_MSG=Enter commit message [add new]: 
 
 if "%COMMIT_MSG%"=="" (
     echo.
-    echo Commit message is required. Nothing was changed.
-    pause
-    exit /b 1
+    echo Using default commit message: add new
+    set "COMMIT_MSG=add new"
 )
 
 git add -A
@@ -61,3 +60,4 @@ if errorlevel 1 (
 echo.
 echo Push completed successfully.
 pause
+
