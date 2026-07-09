@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0"
 
 echo.
-echo === Git push helper ===
+echo === Git pull helper ===
 echo Repository: %CD%
 echo.
 
@@ -27,34 +27,18 @@ if errorlevel 1 (
 )
 
 echo.
-set /p COMMIT_MSG=Enter commit message [add new]: 
-
-if "%COMMIT_MSG%"=="" (
-    echo.
-    echo Using default commit message: add new
-    set "COMMIT_MSG=add new"
-)
-
-git add -A
+git diff --quiet
 if errorlevel 1 (
-    echo.
-    echo git add failed.
+    echo You have local unstaged changes.
+    echo Please commit, stash, or discard them before pulling.
     pause
     exit /b 1
 )
 
 git diff --cached --quiet
-if not errorlevel 1 (
-    echo.
-    echo No staged changes to commit.
-    pause
-    exit /b 0
-)
-
-git commit -m "%COMMIT_MSG%"
 if errorlevel 1 (
-    echo.
-    echo git commit failed.
+    echo You have staged changes.
+    echo Please commit, stash, or unstage them before pulling.
     pause
     exit /b 1
 )
@@ -62,19 +46,23 @@ if errorlevel 1 (
 git rev-parse --abbrev-ref --symbolic-full-name @{u} >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo No upstream branch found. Setting upstream to origin/%BRANCH%.
-    git push -u origin "%BRANCH%"
-) else (
-    git push
-)
-
-if errorlevel 1 (
-    echo.
-    echo git push failed. Check your network or GitHub login status.
+    echo No upstream branch found.
+    echo Try running: git branch --set-upstream-to=origin/%BRANCH% %BRANCH%
     pause
     exit /b 1
 )
 
 echo.
-echo Push completed successfully.
+echo Pulling latest changes with fast-forward only...
+git pull --ff-only
+if errorlevel 1 (
+    echo.
+    echo git pull failed. The branch may have diverged or there may be a conflict.
+    echo If this is expected, run git pull manually and resolve it.
+    pause
+    exit /b 1
+)
+
+echo.
+echo Pull completed successfully.
 pause
